@@ -12,9 +12,6 @@ var ctx_3d;
 
 var walls = [];
 
-var distortion_fix = [];
-var distortion_fixed = false;
-
 // wait for the html to load
 window.onload = function(){
 	rayCanvas = document.getElementById("rayCanvas");
@@ -33,10 +30,14 @@ window.onload = function(){
 	set_keyListeners();
 	
 	running = true;
-	interval = setInterval(render, 1000/30);
+	interval = setInterval(interval, 1000/30);
+}
+function interval(){
+	world_update();
+	world_draw();
 }
 
-//
+// world
 function create_world(){
 	new_wall(0,0, 32, 32);
 	new_wall(0,32, 32, 32);
@@ -102,38 +103,20 @@ function create_world(){
 	new_wall(160,192, 32, 32);
 	new_wall(224,192, 32, 32);
 }
-
-// sim functions
-function start() {
-	if (!running)
-	{
-		running = true;
-		//interval = setInterval(render, 1000/30);
-	}
+function world_update() {
+	player_update();
+	cam_update();
 }
-function stop() {
-	if (running)
-	{
-		running = false;
-		//clearInterval(interval);
-	}
-}
-function reset(){
-
-}
-
-// main render
-function render(){
-	current_canvas = mainCanvas;
-	current_context = ctx_3d;
+function world_draw() {
+	// clear
+	draw_clear_ext(ctx_3d, mainCanvas);
+	draw_clear_ext(ctx_ray, rayCanvas);
 	
-	draw_clear();	
-	
+	// 
 	current_canvas = rayCanvas;
-	current_context = ctx_ray;	
+	current_context = ctx_ray;
 	
-	draw_clear();
-	
+	// draw all walls
 	for	(i = 0; i < walls.length; i++) {
 		draw_set_color("#000000");
 		draw_rect(walls[i].x,walls[i].y,walls[i].width,walls[i].height);
@@ -141,117 +124,154 @@ function render(){
 		draw_rect(walls[i].x+2,walls[i].y+2,walls[i].width-4,walls[i].height-4);
 	}	
 	
-	debug();
-}
-
-function debug(){
-	player_update();
+	cam_draw_debug();
 	
-	var x_from = player.x;
-	var y_from = player.y;
-	
-	
-	var max_view_dist = 500;
-	
-	var fov = 60;
-	var znear = 32;
-	var ray_dist = raycast_cam(x_from, y_from, fov, znear, max_view_dist);
-	
-	
-	
-	//
+	// 
 	current_canvas = mainCanvas;
 	current_context = ctx_3d;
 	
-	var view_angle = ((mouse.y-480/2)/480)*60;// - 480/4;
-	//console.log(view_angle);
-	
-	// draw a bar for each dist
-	var bar_width = current_canvas.width/ray_dist.length
-	var i;	
-	for (i = 0; i<ray_dist.length; i+=1){
-		var ray_distance = ray_dist[i].distnce_fixed;
-		var ray_side = ray_dist[i].side;
-		
-		var win_height = current_canvas.height;
-		var bar_height = current_canvas.height;
-		
-		if (ray_distance == -1) {
-			draw_set_color("#000000");
-		} else {
-			var color = color_new(0,0,0,1);;
-			if (ray_side == 0) color = color_new(255,0,0,1);
-			if (ray_side == 1) color = color_new(0,255,0,1);
-			if (ray_side == 2) color = color_new(0,0,255,1);
-			if (ray_side == 3) color = color_new(255,255,0,1);
-			
-			var dist = clamp(ray_distance/(max_view_dist),0,1);
-			
-			var new_color = merge_color(color_new(0,0,0,1), color, 1-dist)
-			
-			draw_set_color(color_getJScolor(new_color));	
+	screen_render();
+	//render();
+}
 
-			dist = ray_distance;
-			bar_height = (win_height*32)/dist;
+// player
+var player = {
+	x: 45,
+	y: 54,
+	direction:0
+};
+function player_update() {
+	if (Key.isDown(Key.W)) player_move(3,player.direction);
+	if (Key.isDown(Key.A)) player_move(3,player.direction+90);
+	if (Key.isDown(Key.S)) player_move(3,player.direction+180);
+	if (Key.isDown(Key.D)) player_move(3,player.direction-90);
+	
+	if (player.direction < 0) player.direction+=360;
+	if (player.direction > 360) player.direction-=360;
+}
+function player_move(dis, dir){
+
+	var next_x = player.x + lengthdir_x(dis,dir);
+	var next_y = player.y + lengthdir_y(dis,dir);
+	
+	var hit_point = collision_circle_point(next_x, next_y, 10);
+	if (hit_point.hit){
+		next_x += lengthdir_x(10-hit_point.distance, hit_point.dir+180);
+		next_y += lengthdir_y(10-hit_point.distance, hit_point.dir+180);
+		console.log(hit_point);
+	}
+	
+	player.x = next_x;
+	player.y = next_y;
+}
+
+// camera
+var camera = {
+	x: 45,
+	y: 54,
+	z: 32,
+	direction: 0,
+	up_angle: 100,
+	fov: 60,
+	rays: [],
+	distortion_fix: [],
+	pPlane_dis: 32
+};
+function cam_update() {
+	camera.x = player.x;
+	camera.y = player.y;
+	camera.direction = player.direction;
+	if (mouse.locked){
+		mouse.y = clamp(mouse.y, -360, 360);
+		camera.up_angle = (mouse.y*2)*-1;
+		player.direction = (mouse.x/4)*-1;
+	}
+	// dimension of the projection plane
+	var pPlane_width = mainCanvas.width;
+	var pPlane_height = mainCanvas.height;
+	
+	// Center of the Projection Plane
+	var pPlane_center_x = pPlane_width/2;
+	var pPlane_center_y = pPlane_height/2;
+	
+	// angle between subsequent rays
+	var ray_angle_dif = camera.fov/pPlane_width;
+	
+	// distance between the player and the projection plane
+	camera.pPlane_dis = pPlane_width / tan(camera.fov/2);
+	
+	var column;
+	for(column = 0; column<pPlane_width; column++) {
+		var ray_angle = -(camera.fov/2) + column * ray_angle_dif;
+		
+		// find where the ray will go when at max
+		var x_ray_max = camera.x + lengthdir_x(1000, camera.direction + ray_angle);
+		var y_ray_max = camera.y + lengthdir_y(1000, camera.direction + ray_angle);
+		
+		// find the ray hit point
+		var hitpoint = collision_line_point(camera.x, camera.y, x_ray_max, y_ray_max);
+		
+		// updates the ray array with the distance and what side
+		if (hitpoint.hit) {
+			camera.rays[column] = {distance: hitpoint.distance, side:hitpoint.side, angle:(camera.direction + ray_angle)};
+		} else {
+			camera.rays[column] = {distance: 1000, side:hitpoint.side};
 		}
 		
-		var z = win_height/2 + view_angle;//Math.tan(toRadians(view_angle))*ray_distance;
+		// only need to do the fix math once
+		if (typeof(camera.distortion_fix[column]) == 'undefined') {
+			camera.distortion_fix[column] = cos(ray_angle);
+		}
+	}
+}
+function cam_draw_debug() {
+	draw_set_color("#000000");
+	
+	var column;
+	for (column = 0; column<camera.rays.length; column+=1){
+		draw_line(camera.x, camera.y, 
+				camera.x+lengthdir_x(camera.rays[column].distance, camera.rays[column].angle),
+				camera.y+lengthdir_y(camera.rays[column].distance, camera.rays[column].angle));
+	}
+}
+
+//
+function screen_render() {
+	
+	// dimension of the projection plane
+	var pPlane_width = mainCanvas.width;
+	var pPlane_height = mainCanvas.height;
+	
+	// Center of the Projection Plane
+	var pPlane_center_x = pPlane_width/2;
+	var pPlane_center_y = pPlane_height/2 + camera.up_angle;
+	
+	var column;
+	for (column = 0; column<camera.rays.length; column+=1){
 		
-		var top = z-(bar_height/2);
-		var bottom = bar_height;
-
-		draw_rect(current_canvas.width-(bar_width)-(i*bar_width), top, bar_width+1, bottom);
-
-		draw_set_color("#000000");
 		//
-		var off_height = (win_height-bar_height)/2;
-		draw_rect(current_canvas.width-(bar_width)-(i*bar_width), 0, bar_width+1, top);
-		draw_rect(current_canvas.width-(bar_width)-(i*bar_width), top+bottom, bar_width+1, 1000);
+		var ray_distance = camera.rays[column].distance;
+		var ray_side = camera.rays[column].side;
+		
+		//
+		var color = color_new(0,0,0,1);;
+		if (ray_side == 0) color = color_new(255,0,0,1);
+		if (ray_side == 1) color = color_new(0,255,0,1);
+		if (ray_side == 2) color = color_new(0,0,255,1);
+		if (ray_side == 3) color = color_new(255,255,0,1);
+		
+		var color_fad = clamp(ray_distance/(500),0,1);
+		var new_color = merge_color(color_new(0,0,0,1), color, 1-color_fad);
+		draw_set_color(color_getJScolor(new_color));
+		
+		//pPlane_height*32
+		var height = (32 / (ray_distance * camera.distortion_fix[column])) * camera.pPlane_dis;
+
+		//
+		var column_x = pPlane_width-column;
+		draw_line(column_x, pPlane_center_y-height/2 ,column_x, pPlane_center_y+height/2);
 	}
 }
-
-function raycast_cam(x_from, y_from, fov, znear, max_view_dist) {
-	var ray_dist = [];
-	var view_rez = .1;
-	//
-	current_canvas = rayCanvas;
-	current_context = ctx_ray;
-	// cast a ray in all directions of the view
-	var view_angle;
-	for (view_angle = -(fov/2); view_angle<=fov/2; view_angle+=view_rez) {
-		var x_to = x_from + lengthdir_x(max_view_dist, player.direction+view_angle);
-		var y_to = y_from + lengthdir_y(max_view_dist, player.direction+view_angle);
-		
-		var hitpoint = collision_line_point(x_from, y_from, x_to, y_to);
-		var dist = -1;
-		
-		if (hitpoint == 0) {
-			draw_set_color("#0000FF");
-			draw_line(x_from, y_from, x_to, y_to);
-		} else {
-			if (hitpoint.hit)
-			{
-				draw_set_color("#FF0000");
-				draw_circle(hitpoint.x, hitpoint.y, 5);
-				dist = hitpoint.distance;
-			}
-			
-			draw_line(x_from, y_from, x_to, y_to);
-		}
-
-		
-		if (distortion_fixed == false){
-			distortion_fix[view_angle] = Math.cos( toRadians( view_angle));
-		}
-		
-		ray_dist.push({distnce:dist, distnce_fixed:dist*distortion_fix[view_angle], side:hitpoint.side, angle:view_angle});
-	}
-	distortion_fixed = true;
-	
-	return ray_dist;
-}
-
-
 
 // objects
 function new_wall(x, y, width, height){
@@ -266,11 +286,21 @@ function new_wall(x, y, width, height){
 	walls.push(wall);
 }
 
-//
+//////////////////////////////////////////////////////////////////////
+// collisions
+//////////////////////////////////////////////////////////////////////
+// line
 function collision_line_point(x1, y1, x2, y2){
 	var angle = point_direction(x1, y1, x2, y2);
 
-	var bestPoint = 0;
+	var bestPoint = {
+		x: 0,
+		y: 0,
+		hit: false,
+		side: 0,
+		distance: 10000000
+	};
+	
 	var i;
 	for	(i = 0; i < walls.length; i++) {
 		var hitpoint = line_getIntersection_rect(
@@ -279,19 +309,14 @@ function collision_line_point(x1, y1, x2, y2){
 				x2:walls[i].x+walls[i].width, y2:walls[i].y+walls[i].height});
 		
 		if (hitpoint.hit) {
-			if (bestPoint == 0) {
+			if (bestPoint.distance > hitpoint.distance){
 				bestPoint = hitpoint;
-			} else {
-				if (bestPoint.distance > hitpoint.distance){
-					bestPoint = hitpoint;
-				}
 			}
 		}
 	}
 	
 	return bestPoint;
 }
-
 function line_getIntersection_rect(line, rect) {
 
 	// left
@@ -468,79 +493,83 @@ function line_getIntersection_line(line1, line2) {
 	return result;*/
 }
 
-
-
-function collision_line(x1, y1, x2, y2){
-	var i, wall, hit1, hit2, hit3, hit4, w, h, x4, y4;
+// circle 
+function collision_circle_point(x, y, r){
+	var bestPoint = {hit:false, x:0, y:0, distance: r, dir:0}
+	
+	var circle = {x:x, y:y, r:r};
+	var circle_bb = AABB_from_circle(circle);
+	
+	var i;
 	for	(i = 0; i < walls.length; i++) {
-		wall = walls[i];
+		var wall_bb = AABB_from_wall(walls[i]);
 		
-		w = wall.x + wall.width;
-		h = wall.y + wall.height;
-		
-		hit1 = lines_intersect(x1,y1,x2,y2, 
-					wall.x, wall.y, w, wall.y, true);
-		hit2 = lines_intersect(x1,y1,x2,y2,
-					wall.x, h, w, h,true);
-		hit3 = lines_intersect(x1,y1,x2,y2,
-					wall.x, wall.y,wall.x,h,true);
-		hit4 = lines_intersect(x1,y1,x2,y2,
-					w,wall.y,w,h,true);
-		
-		if (hit1 || hit2 || hit3 || hit4)
+		if (collision_AABB(circle_bb, wall_bb))
 		{
-			return true;
+			var hit_rez = 5;
+			var dir;
+			for(dir = 0; dir<360; dir+=hit_rez){
+				var hitpoint = line_getIntersection_rect(
+					{x1:x, y1:y, x2:x+lengthdir_x(r,dir), y2:y+lengthdir_y(r,dir)}, 
+					wall_bb);
+					
+				if (hitpoint.hit) {
+					if (bestPoint.distance > hitpoint.distance){
+						bestPoint.x = hitpoint.x;
+						bestPoint.y = hitpoint.y;
+						bestPoint.distance = hitpoint.distance;
+						bestPoint.hit = hitpoint.hit;
+						bestPoint.dir = dir;
+					}
+				}
+			}
 		}
+		
 	}
-	return false;
+	
+	return bestPoint;
 }
+
+// AABB
+function collision_AABB(AABB_1, AABB_2){
+	return  AABB_1.x1 <= AABB_2.x2 &&
+			AABB_2.x1 <= AABB_1.x2 &&
+			AABB_1.y1 <= AABB_2.y2 &&
+			AABB_2.y1 <= AABB_1.y2;
+}
+
+function AABB_from_circle(circle){
+	return {
+		x1: circle.x-circle.r,
+		y1: circle.y-circle.r,
+		x2: circle.x+circle.r,
+		y2: circle.y+circle.r
+	};
+}
+function AABB_from_wall(wall){
+	return {
+		x1: wall.x,
+		y1: wall.y,
+		x2: wall.x+wall.width,
+		y2: wall.y+wall.height
+	}
+}
+
+// point
 function collision_point(x,y){
 	var i;
 	for	(i = 0; i < walls.length; i++) {
-		if (x>walls[i].x && x<walls[i].x+walls[i].width &&
-			y>walls[i].y && y<walls[i].y+walls[i].height)
-		{
+		if (x>=walls[i].x && y>=walls[i].y && x<=walls[i].x+walls[i].width && y<=walls[i].y+walls[i].height) {
 			return true;
 		}
 	}
 	return false;
 }
 
-//
-function lines_intersect(x1,y1,x2,y2,x3,y3,x4,y4,segment) {
-    var ua, ub, ud, ux, uy, vx, vy, wx, wy;
-    ua = 0;
-    ux = x2 - x1;
-    uy = y2 - y1;
-    vx = x4 - x3;
-    vy = y4 - y3;
-    wx = x1 - x3;
-    wy = y1 - y3;
-    ud = vy * ux - vx * uy;
-	
-    if (ud != 0) 
-    {
-        ua = (vx * wy - vy * wx) / ud;
-        if (segment) 
-        {
-            ub = (ux * wy - uy * wx) / ud;
-            if (ua < 0 || ua > 1 || ub < 0 || ub > 1) ua = 0;
-        }
-    }
-	
-	if (ua > 0 && ua <= 1)
-		return true;
-	else
-		return false;
-}
 
-
-// player
-var player = {
-	x: 45,
-	y: 54,
-	direction:0
-};
+//////////////////////////////////////////////////////////////////////
+// keyboard
+//////////////////////////////////////////////////////////////////////
 var Key = {
   _pressed: {},
 
@@ -549,89 +578,91 @@ var Key = {
   RIGHT: 39,
   DOWN: 40,
   
+  W: 87,
+  S: 83,
+  A: 65,
+  D: 68,
+  
   isDown: function(keyCode) {
     return this._pressed[keyCode];
   },
   
   onKeydown: function(event) {
     this._pressed[event.keyCode] = true;
+	//console.log(event.keyCode);
   },
   
   onKeyup: function(event) {
     delete this._pressed[event.keyCode];
   }
 };
-function player_update() {
-	if (Key.isDown(Key.UP)) {
-		player.x += lengthdir_x(3,player.direction);
-		player.y += lengthdir_y(3,player.direction);
-	}
-	if (Key.isDown(Key.LEFT)) {
-		player.direction += 2;
-	}
-	if (Key.isDown(Key.DOWN)) {
-		player.x -= lengthdir_x(3,player.direction);
-		player.y -= lengthdir_y(3,player.direction);
-	}
-	if (Key.isDown(Key.RIGHT)) {
-		player.direction -= 2;
-	}
-	
-	if (player.direction < 0) player.direction+=360;
-	if (player.direction > 360) player.direction-=360;
-}
-
 function set_keyListeners(){
 	window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
 	window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
-
-	
-	/*
-	window.addEventListener('keydown', function(event) {
-	  switch (event.keyCode) {
-		case 37: // Left
-		  //Game.player.moveLeft();
-		break;
-
-		case 38: // Up
-			player.x += lengthdir_x(3,player.direction);
-			player.y += lengthdir_y(3,player.direction);
-		  //Game.player.moveUp();
-		break;
-
-		case 39: // Right
-		  //Game.player.moveRight();
-		break;
-
-		case 40: // Down
-			player.x -= lengthdir_x(3,player.direction);
-			player.y -= lengthdir_y(3,player.direction);
-		  //Game.player.moveDown();
-		break;
-	  }
-	}, false);*/
 }
 
-
+//////////////////////////////////////////////////////////////////////
 // mouse
+//////////////////////////////////////////////////////////////////////
 var mouse = {
 	x: 0,
 	y: 0,
 	over:false,
-	down:false
+	down:false,
+	locked: false
 };
 function set_mouseListeners(){
-	mainCanvas.addEventListener('mousemove', function(evt) {
-		var rect = mainCanvas.getBoundingClientRect();
-		mouse.x = Math.round((evt.clientX-rect.left)/(rect.right-rect.left)*mainCanvas.width);
-		mouse.y = Math.round((evt.clientY-rect.top)/(rect.bottom-rect.top)*mainCanvas.height);
+	document.addEventListener('mousemove', function(evt) {
+		if (mouse.locked == false) {
+			var rect = mainCanvas.getBoundingClientRect();
+			var mx = Math.round((evt.clientX-rect.left)/(rect.right-rect.left)*mainCanvas.width);
+			var my = Math.round((evt.clientY-rect.top)/(rect.bottom-rect.top)*mainCanvas.height);
+			if (mx >=0 && my>=0 && mx<=mainCanvas.width && my<=mainCanvas.height){
+				mouse.x = mx;
+				mouse.y = my;
+			}
+		} else {
+			var mx = evt.movementX ||
+					evt.mozMovementX ||
+					evt.webkitMovementX ||
+					0;
+	 
+			var my = evt.movementY ||
+					evt.mozMovementY ||
+					evt.webkitMovementY ||
+					0;
+					
+			mouse.x+=mx;
+			mouse.y+=my;
+		}
 	}, false);
 	
-	mainCanvas.addEventListener('mousedown', function(evt) {mouse.down = true;}, false);
+	mainCanvas.addEventListener('mousedown', function(evt) {mouse.down = true; }, false);
 	mainCanvas.addEventListener('mouseup', function(evt) {mouse.down = false;}, false);
 	
 	mainCanvas.addEventListener('mouseover', function(evt) { mouse.over = true;}, false);
 	mainCanvas.addEventListener('mouseout', function(evt) { mouse.over = false;}, false);
+	
+	//
+	mainCanvas.addEventListener("click", function(evt) {
+		mainCanvas.requestPointerLock = mainCanvas.requestPointerLock ||
+                    mainCanvas.mozRequestPointerLock ||
+                    mainCanvas.webkitRequestPointerLock;
+		mainCanvas.requestPointerLock();
+	}, false);
+}
+
+document.addEventListener('pointerlockchange', changeCallback, false);
+document.addEventListener('mozpointerlockchange', changeCallback, false);
+document.addEventListener('webkitpointerlockchange', changeCallback, false);    
+
+function changeCallback(e) {
+	mouse.locked = !mouse.locked;
+	
+	if (mouse.locked == true){
+		//mouse.x = mainCanvas.width/2;
+		mouse.y = mainCanvas.height/2;
+	}
 }
 
 
@@ -642,10 +673,8 @@ function point_distance(x1,y1,x2,y2){
 	return Math.sqrt(((x1-x2)*(x1-x2)) + ((y2-y1)*(y2-y1)));
 }
 function point_direction(x1,y1,x2,y2) {
-
     //return ((Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI)-180)*-1;
 	return ((Math.atan2(y2 - y1, x2 - x1)));//*-1;
-	
 }
 function clamp(val, min, max){
 	return Math.min(Math.max(val, min), max);
@@ -659,7 +688,15 @@ function lengthdir_x(length, direction){
 function lengthdir_y(length, direction){
 	return -Math.sin(toRadians(direction))*length;
 }
-
+function sin(deg) {
+	return Math.sin(toRadians(deg));
+}
+function cos(deg) {
+	return Math.cos(toRadians(deg));
+}
+function tan(deg) {
+	return Math.tan(toRadians(deg));
+}
 	
 	
 //////////////////////////////////////////////////////////////////////
@@ -726,6 +763,9 @@ function blend(color1, color2) {
 function draw_set_color(color){
 	current_context.fillStyle = color;
 	current_context.strokeStyle = color;
+}
+function draw_clear_ext(ctx, can){
+	ctx.clearRect(0, 0, can.width, can.height);
 }
 function draw_clear(){
 	current_context.clearRect(0, 0, current_canvas.width, current_canvas.height);
