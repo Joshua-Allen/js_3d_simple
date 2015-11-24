@@ -30,10 +30,15 @@ window.onload = function(){
 	set_keyListeners();
 	
 	running = true;
-	interval = setInterval(interval, 1000/30);
+	//interval = setInterval(interval, 1000/30);
+	requestAnimationFrame(interval_1); 
 }
-function interval(){
+function interval_1(){
+	requestAnimationFrame(interval_2);
 	world_update();
+}
+function interval_2(){
+	requestAnimationFrame(interval_1);
 	world_draw();
 }
 
@@ -138,13 +143,35 @@ function world_draw() {
 var player = {
 	x: 45,
 	y: 54,
-	direction:0
+	z: 32,
+	zSpeed: 0,
+	onGround: true,
+	direction:-45
 };
 function player_update() {
+	
+	//
+	player.zSpeed -= 5;
+	player.z += player.zSpeed;
+	
+	if (player.z<=32){
+		player.zSpeed = 0;
+		player.z=32;
+		player.onGround = true;
+	}
+	
+	
+	//
 	if (Key.isDown(Key.W)) player_move(3,player.direction);
 	if (Key.isDown(Key.A)) player_move(3,player.direction+90);
 	if (Key.isDown(Key.S)) player_move(3,player.direction+180);
 	if (Key.isDown(Key.D)) player_move(3,player.direction-90);
+	if (Key.isDown(Key.SPACE)) {
+		if (player.onGround == true) {
+			player.zSpeed = 100;
+			player.onGround = false;
+		}
+	}
 	
 	if (player.direction < 0) player.direction+=360;
 	if (player.direction > 360) player.direction-=360;
@@ -158,7 +185,7 @@ function player_move(dis, dir){
 	if (hit_point.hit){
 		next_x += lengthdir_x(10-hit_point.distance, hit_point.dir+180);
 		next_y += lengthdir_y(10-hit_point.distance, hit_point.dir+180);
-		console.log(hit_point);
+		//console.log(hit_point);
 	}
 	
 	player.x = next_x;
@@ -171,7 +198,7 @@ var camera = {
 	y: 54,
 	z: 32,
 	direction: 0,
-	up_angle: 100,
+	up_angle: 0,
 	fov: 60,
 	rays: [],
 	distortion_fix: [],
@@ -180,6 +207,7 @@ var camera = {
 function cam_update() {
 	camera.x = player.x;
 	camera.y = player.y;
+	camera.z = player.z;
 	camera.direction = player.direction;
 	if (mouse.locked){
 		mouse.y = clamp(mouse.y, -360, 360);
@@ -264,12 +292,12 @@ function screen_render() {
 		var new_color = merge_color(color_new(0,0,0,1), color, 1-color_fad);
 		draw_set_color(color_getJScolor(new_color));
 		
-		//pPlane_height*32
 		var height = (32 / (ray_distance * camera.distortion_fix[column])) * camera.pPlane_dis;
 
 		//
 		var column_x = pPlane_width-column;
-		draw_line(column_x, pPlane_center_y-height/2 ,column_x, pPlane_center_y+height/2);
+		var column_y = pPlane_center_y + camera.z/ray_distance*10;
+		draw_line(column_x, column_y-height/2 ,column_x, column_y+height/2);
 	}
 }
 
@@ -583,6 +611,8 @@ var Key = {
   A: 65,
   D: 68,
   
+  SPACE: 32,
+  
   isDown: function(keyCode) {
     return this._pressed[keyCode];
   },
@@ -600,6 +630,7 @@ function set_keyListeners(){
 	window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
 	window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
 }
+
 
 //////////////////////////////////////////////////////////////////////
 // mouse
