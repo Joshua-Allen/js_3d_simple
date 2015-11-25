@@ -11,6 +11,15 @@ var mainCanvas;
 var ctx_3d;
 
 var walls = [];
+var wall_sprite = [new Image(),new Image(),new Image(),new Image(),new Image(),new Image()]
+wall_sprite[0].src = 'wall_0.png';
+wall_sprite[1].src = 'wall_1.png';
+wall_sprite[2].src = 'wall_2.png';
+wall_sprite[3].src = 'wall_3.png';
+wall_sprite[4].src = 'wall_4.png';
+wall_sprite[5].src = 'wall_5.png';
+
+
 
 // wait for the html to load
 window.onload = function(){
@@ -30,11 +39,11 @@ window.onload = function(){
 	set_keyListeners();
 	
 	running = true;
-	//interval = setInterval(interval, 1000/30);
-	requestAnimationFrame(interval_1); 
+	interval = setInterval(interval_2, 1000/30);
+	//requestAnimationFrame(interval_1); 
 }
 function interval_1(){
-	requestAnimationFrame(interval_2);
+	//requestAnimationFrame(interval_2);
 	world_update();
 }
 function interval_2(){
@@ -56,27 +65,6 @@ function create_world(){
 	new_wall(0,288, 32, 32);
 	new_wall(0,320, 32, 32);
 	new_wall(0,352, 32, 32);
-	new_wall(32,352, 32, 32);
-	new_wall(64,352, 32, 32);
-	new_wall(96,352, 32, 32);
-	new_wall(160,352, 32, 32);
-	new_wall(128,352, 32, 32);
-	new_wall(192,352, 32, 32);
-	new_wall(224,352, 32, 32);
-	new_wall(256,352, 32, 32);
-	new_wall(288,352, 32, 32);
-	new_wall(320,352, 32, 32);
-	new_wall(352,352, 32, 32);
-	new_wall(352,320, 32, 32);
-	new_wall(352,288, 32, 32);
-	new_wall(352,256, 32, 32);
-	new_wall(352,224, 32, 32);
-	new_wall(352,192, 32, 32);
-	new_wall(352,160, 32, 32);
-	new_wall(352,128, 32, 32);
-	new_wall(352,96, 32, 32);
-	new_wall(352,64, 32, 32);
-	new_wall(352,32, 32, 32);
 	new_wall(352,0, 32, 32);
 	new_wall(320,0, 32, 32);
 	new_wall(288,0, 32, 32);
@@ -88,25 +76,329 @@ function create_world(){
 	new_wall(96,0, 32, 32);
 	new_wall(64,0, 32, 32);
 	new_wall(32,0, 32, 32);
-	new_wall(160,32, 32, 32);
-	new_wall(160,64, 32, 32);
-	new_wall(160,96, 32, 32);
-	new_wall(128,192, 32, 32);
-	new_wall(96,192, 32, 32);
-	new_wall(64,192, 32, 32);
-	new_wall(224,96, 32, 32);
-	new_wall(288,64, 32, 32);
-	new_wall(288,96, 32, 32);
-	new_wall(288,128, 32, 32);
-	new_wall(192,288, 32, 32);
-	new_wall(192,256, 32, 32);
-	new_wall(224,256, 32, 32);
-	new_wall(256,256, 32, 32);
-	new_wall(288,256, 32, 32);
-	new_wall(160,256, 32, 32);
-	new_wall(160,224, 32, 32);
-	new_wall(160,192, 32, 32);
+	new_wall(0,384, 32, 32);
+	new_wall(0,416, 32, 32);
+	new_wall(0,448, 32, 32);
+	new_wall(0,480, 32, 32);
+	new_wall(0,512, 32, 32);
+	new_wall(0,544, 32, 32);
+	new_wall(0,576, 32, 32);
+	new_wall(0,608, 32, 32);
+	new_wall(0,640, 32, 32);
+	new_wall(0,672, 32, 32);
+	new_wall(0,704, 32, 32);
+	new_wall(0,736, 32, 32);
+	new_wall(0,768, 32, 32);
+	new_wall(0,800, 32, 32);
+	new_wall(0,832, 32, 32);
+	new_wall(0,864, 32, 32);
+	new_wall(0,896, 32, 32);
+	new_wall(0,928, 32, 32);
+	new_wall(0,960, 32, 32);
+	new_wall(32,960, 32, 32);
+	new_wall(64,960, 32, 32);
+	new_wall(96,960, 32, 32);
+	new_wall(128,960, 32, 32);
+	new_wall(160,960, 32, 32);
+	new_wall(192,960, 32, 32);
+	new_wall(224,960, 32, 32);
+	new_wall(256,960, 32, 32);
+	new_wall(288,960, 32, 32);
+	new_wall(320,960, 32, 32);
+	new_wall(352,960, 32, 32);
+	new_wall(384,960, 32, 32);
+	new_wall(416,960, 32, 32);
+	new_wall(448,960, 32, 32);
+	new_wall(480,960, 32, 32);
+	new_wall(512,960, 32, 32);
+	new_wall(544,960, 32, 32);
+	new_wall(576,960, 32, 32);
+	new_wall(608,960, 32, 32);
+	new_wall(640,960, 32, 32);
+	new_wall(672,960, 32, 32);
+	new_wall(704,960, 32, 32);
+	new_wall(736,960, 32, 32);
+	new_wall(768,960, 32, 32);
+	new_wall(800,960, 32, 32);
+	new_wall(832,960, 32, 32);
+	new_wall(864,960, 32, 32);
+	new_wall(896,960, 32, 32);
+	new_wall(928,960, 32, 32);
+	new_wall(960,960, 32, 32);
+	new_wall(960,832, 32, 32);
+	new_wall(960,800, 32, 32);
+	new_wall(960,768, 32, 32);
+	new_wall(960,736, 32, 32);
+	new_wall(960,704, 32, 32);
+	new_wall(960,672, 32, 32);
+	new_wall(960,640, 32, 32);
+	new_wall(960,608, 32, 32);
+	new_wall(960,576, 32, 32);
+	new_wall(960,544, 32, 32);
+	new_wall(960,512, 32, 32);
+	new_wall(960,480, 32, 32);
+	new_wall(960,448, 32, 32);
+	new_wall(960,416, 32, 32);
+	new_wall(960,384, 32, 32);
+	new_wall(960,352, 32, 32);
+	new_wall(960,320, 32, 32);
+	new_wall(960,288, 32, 32);
+	new_wall(960,256, 32, 32);
+	new_wall(960,224, 32, 32);
+	new_wall(960,192, 32, 32);
+	new_wall(960,160, 32, 32);
+	new_wall(960,128, 32, 32);
+	new_wall(960,96, 32, 32);
+	new_wall(960,64, 32, 32);
+	new_wall(960,32, 32, 32);
+	new_wall(960,0, 32, 32);
+	new_wall(928,0, 32, 32);
+	new_wall(896,0, 32, 32);
+	new_wall(864,0, 32, 32);
+	new_wall(832,0, 32, 32);
+	new_wall(800,0, 32, 32);
+	new_wall(768,0, 32, 32);
+	new_wall(736,0, 32, 32);
+	new_wall(704,0, 32, 32);
+	new_wall(672,0, 32, 32);
+	new_wall(640,0, 32, 32);
+	new_wall(608,0, 32, 32);
+	new_wall(576,0, 32, 32);
+	new_wall(544,0, 32, 32);
+	new_wall(512,0, 32, 32);
+	new_wall(480,0, 32, 32);
+	new_wall(448,0, 32, 32);
+	new_wall(416,0, 32, 32);
+	new_wall(384,0, 32, 32);
+	new_wall(480,128, 32, 32);
+	new_wall(480,160, 32, 32);
+	new_wall(480,192, 32, 32);
+	new_wall(480,224, 32, 32);
+	new_wall(480,256, 32, 32);
+	new_wall(480,288, 32, 32);
+	new_wall(480,320, 32, 32);
+	new_wall(448,192, 32, 32);
+	new_wall(416,192, 32, 32);
+	new_wall(384,192, 32, 32);
+	new_wall(352,192, 32, 32);
+	new_wall(320,192, 32, 32);
+	new_wall(288,192, 32, 32);
+	new_wall(256,192, 32, 32);
 	new_wall(224,192, 32, 32);
+	new_wall(192,192, 32, 32);
+	new_wall(160,192, 32, 32);
+	new_wall(96,192, 32, 32);
+	new_wall(128,160, 32, 32);
+	new_wall(128,128, 32, 32);
+	new_wall(128,96, 32, 32);
+	new_wall(256,96, 32, 32);
+	new_wall(288,96, 32, 32);
+	new_wall(384,160, 32, 32);
+	new_wall(384,32, 32, 32);
+	new_wall(480,96, 32, 32);
+	new_wall(480,64, 32, 32);
+	new_wall(512,64, 32, 32);
+	new_wall(544,64, 32, 32);
+	new_wall(576,64, 32, 32);
+	new_wall(608,64, 32, 32);
+	new_wall(672,64, 32, 32);
+	new_wall(704,64, 32, 32);
+	new_wall(768,64, 32, 32);
+	new_wall(800,64, 32, 32);
+	new_wall(864,64, 32, 32);
+	new_wall(896,64, 32, 32);
+	new_wall(928,64, 32, 32);
+	new_wall(736,64, 32, 32);
+	new_wall(736,96, 32, 32);
+	new_wall(736,128, 32, 32);
+	new_wall(736,160, 32, 32);
+	new_wall(512,224, 32, 32);
+	new_wall(544,224, 32, 32);
+	new_wall(576,224, 32, 32);
+	new_wall(608,224, 32, 32);
+	new_wall(640,224, 32, 32);
+	new_wall(672,224, 32, 32);
+	new_wall(704,224, 32, 32);
+	new_wall(768,224, 32, 32);
+	new_wall(800,224, 32, 32);
+	new_wall(832,224, 32, 32);
+	new_wall(864,224, 32, 32);
+	new_wall(896,224, 32, 32);
+	new_wall(928,224, 32, 32);
+	new_wall(544,160, 32, 32);
+	new_wall(704,288, 32, 32);
+	new_wall(736,288, 32, 32);
+	new_wall(768,288, 32, 32);
+	new_wall(704,320, 32, 32);
+	new_wall(704,352, 32, 32);
+	new_wall(768,320, 32, 32);
+	new_wall(768,352, 32, 32);
+	new_wall(736,352, 32, 32);
+	new_wall(576,320, 32, 32);
+	new_wall(576,352, 32, 32);
+	new_wall(576,384, 32, 32);
+	new_wall(576,416, 32, 32);
+	new_wall(544,416, 32, 32);
+	new_wall(544,448, 32, 32);
+	new_wall(768,512, 32, 32);
+	new_wall(736,512, 32, 32);
+	new_wall(736,544, 32, 32);
+	new_wall(704,544, 32, 32);
+	new_wall(704,576, 32, 32);
+	new_wall(672,576, 32, 32);
+	new_wall(640,576, 32, 32);
+	new_wall(608,576, 32, 32);
+	new_wall(576,576, 32, 32);
+	new_wall(544,576, 32, 32);
+	new_wall(512,576, 32, 32);
+	new_wall(512,544, 32, 32);
+	new_wall(480,544, 32, 32);
+	new_wall(480,512, 32, 32);
+	new_wall(480,480, 32, 32);
+	new_wall(480,448, 32, 32);
+	new_wall(448,416, 32, 32);
+	new_wall(448,384, 32, 32);
+	new_wall(416,384, 32, 32);
+	new_wall(416,352, 32, 32);
+	new_wall(384,352, 32, 32);
+	new_wall(352,352, 32, 32);
+	new_wall(320,352, 32, 32);
+	new_wall(288,352, 32, 32);
+	new_wall(256,352, 32, 32);
+	new_wall(160,416, 32, 32);
+	new_wall(160,448, 32, 32);
+	new_wall(160,480, 32, 32);
+	new_wall(160,512, 32, 32);
+	new_wall(128,544, 32, 32);
+	new_wall(128,576, 32, 32);
+	new_wall(128,608, 32, 32);
+	new_wall(128,640, 32, 32);
+	new_wall(160,640, 32, 32);
+	new_wall(160,672, 32, 32);
+	new_wall(160,704, 32, 32);
+	new_wall(320,736, 32, 32);
+	new_wall(320,704, 32, 32);
+	new_wall(352,704, 32, 32);
+	new_wall(352,672, 32, 32);
+	new_wall(352,640, 32, 32);
+	new_wall(352,608, 32, 32);
+	new_wall(320,608, 32, 32);
+	new_wall(320,576, 32, 32);
+	new_wall(320,544, 32, 32);
+	new_wall(288,512, 32, 32);
+	new_wall(192,320, 32, 32);
+	new_wall(192,288, 32, 32);
+	new_wall(160,288, 32, 32);
+	new_wall(128,288, 32, 32);
+	new_wall(64,736, 32, 32);
+	new_wall(64,768, 32, 32);
+	new_wall(64,800, 32, 32);
+	new_wall(64,832, 32, 32);
+	new_wall(64,864, 32, 32);
+	new_wall(64,896, 32, 32);
+	new_wall(64,928, 32, 32);
+	new_wall(32,928, 32, 32);
+	new_wall(64,512, 32, 32);
+	new_wall(32,480, 32, 32);
+	new_wall(32,448, 32, 32);
+	new_wall(32,416, 32, 32);
+	new_wall(32,384, 32, 32);
+	new_wall(0,384, 32, 32);
+	new_wall(0,352, 32, 32);
+	new_wall(384,800, 32, 32);
+	new_wall(416,832, 32, 32);
+	new_wall(448,832, 32, 32);
+	new_wall(480,864, 32, 32);
+	new_wall(512,864, 32, 32);
+	new_wall(544,864, 32, 32);
+	new_wall(576,864, 32, 32);
+	new_wall(576,896, 32, 32);
+	new_wall(608,896, 32, 32);
+	new_wall(640,896, 32, 32);
+	new_wall(672,896, 32, 32);
+	new_wall(704,896, 32, 32);
+	new_wall(704,928, 32, 32);
+	new_wall(736,928, 32, 32);
+	new_wall(736,960, 32, 32);
+	new_wall(608,768, 32, 32);
+	new_wall(640,768, 32, 32);
+	new_wall(672,768, 32, 32);
+	new_wall(704,768, 32, 32);
+	new_wall(736,768, 32, 32);
+	new_wall(768,768, 32, 32);
+	new_wall(800,768, 32, 32);
+	new_wall(832,768, 32, 32);
+	new_wall(832,736, 32, 32);
+	new_wall(864,736, 32, 32);
+	new_wall(896,736, 32, 32);
+	new_wall(896,704, 32, 32);
+	new_wall(928,704, 32, 32);
+	new_wall(928,672, 32, 32);
+	new_wall(960,672, 32, 32);
+	new_wall(832,896, 32, 32);
+	new_wall(832,928, 32, 32);
+	new_wall(832,960, 32, 32);
+	new_wall(736,832, 32, 32);
+	new_wall(736,800, 32, 32);
+	new_wall(736,768, 32, 32);
+	new_wall(736,736, 32, 32);
+	new_wall(736,704, 32, 32);
+	new_wall(736,672, 32, 32);
+	new_wall(768,672, 32, 32);
+	new_wall(768,640, 32, 32);
+	new_wall(768,608, 32, 32);
+	new_wall(800,608, 32, 32);
+	new_wall(832,608, 32, 32);
+	new_wall(832,576, 32, 32);
+	new_wall(864,576, 32, 32);
+	new_wall(896,576, 32, 32);
+	new_wall(800,448, 32, 32);
+	new_wall(832,448, 32, 32);
+	new_wall(832,416, 32, 32);
+	new_wall(864,416, 32, 32);
+	new_wall(864,384, 32, 32);
+	new_wall(864,352, 32, 32);
+	new_wall(896,352, 32, 32);
+	new_wall(864,352, 32, 32);
+	new_wall(864,320, 32, 32);
+	new_wall(832,320, 32, 32);
+	new_wall(800,320, 32, 32);
+	new_wall(704,384, 32, 32);
+	new_wall(672,384, 32, 32);
+	new_wall(448,672, 32, 32);
+	new_wall(448,704, 32, 32);
+	new_wall(480,704, 32, 32);
+	new_wall(512,704, 32, 32);
+	new_wall(544,704, 32, 32);
+	new_wall(576,704, 32, 32);
+	new_wall(608,704, 32, 32);
+	new_wall(608,672, 32, 32);
+	new_wall(608,640, 32, 32);
+	new_wall(576,640, 32, 32);
+	new_wall(576,608, 32, 32);
+	new_wall(320,416, 32, 32);
+	new_wall(352,448, 32, 32);
+	new_wall(384,448, 32, 32);
+	new_wall(384,416, 32, 32);
+	new_wall(416,416, 32, 32);
+	new_wall(288,608, 32, 32);
+	new_wall(256,608, 32, 32);
+	new_wall(224,608, 32, 32);
+	new_wall(224,640, 32, 32);
+	new_wall(224,672, 32, 32);
+	new_wall(192,672, 32, 32);
+	new_wall(192,704, 32, 32);
+	new_wall(160,704, 32, 32);
+	new_wall(192,896, 32, 32);
+	new_wall(224,896, 32, 32);
+	new_wall(256,864, 32, 32);
+	new_wall(224,864, 32, 32);
+	new_wall(224,832, 32, 32);
+	new_wall(192,832, 32, 32);
+	new_wall(192,800, 32, 32);
+	new_wall(192,768, 32, 32);
+	new_wall(160,768, 32, 32);
+	new_wall(160,736, 32, 32);
 }
 function world_update() {
 	player_update();
@@ -121,12 +413,17 @@ function world_draw() {
 	current_canvas = rayCanvas;
 	current_context = ctx_ray;
 	
+	draw_dif_x = camera.x - rayCanvas.width/2;
+	draw_dif_y = camera.y - rayCanvas.height/2;
+	
 	// draw all walls
 	for	(i = 0; i < walls.length; i++) {
+		var x = walls[i].x - draw_dif_x;
+		var y = walls[i].y - draw_dif_y;
 		draw_set_color("#000000");
-		draw_rect(walls[i].x,walls[i].y,walls[i].width,walls[i].height);
+		draw_rect(x, y, walls[i].width, walls[i].height);
 		draw_set_color("#FFFFFF");
-		draw_rect(walls[i].x+2,walls[i].y+2,walls[i].width-4,walls[i].height-4);
+		draw_rect(x+2, y+2, walls[i].width-4, walls[i].height-4);
 	}	
 	
 	cam_draw_debug();
@@ -160,7 +457,6 @@ function player_update() {
 		player.onGround = true;
 	}
 	
-	
 	//
 	if (Key.isDown(Key.W)) player_move(3,player.direction);
 	if (Key.isDown(Key.A)) player_move(3,player.direction+90);
@@ -181,12 +477,15 @@ function player_move(dis, dir){
 	var next_x = player.x + lengthdir_x(dis,dir);
 	var next_y = player.y + lengthdir_y(dis,dir);
 	
-	var hit_point = collision_circle_point(next_x, next_y, 10);
-	if (hit_point.hit){
-		next_x += lengthdir_x(10-hit_point.distance, hit_point.dir+180);
-		next_y += lengthdir_y(10-hit_point.distance, hit_point.dir+180);
-		//console.log(hit_point);
-	}
+	var hit_left =  collision_line_point(player.x, player.y, player.x-10, player.y);
+	var hit_up =    collision_line_point(player.x, player.y, player.x, player.y+10);
+	var hit_right = collision_line_point(player.x, player.y, player.x+10, player.y);
+	var hit_down =  collision_line_point(player.x, player.y, player.x, player.y-10);
+	
+	if (hit_left.hit)  next_x += 10-hit_left.distance;
+	if (hit_up.hit)    next_y -= 10-hit_up.distance;
+	if (hit_right.hit) next_x -= 10-hit_right.distance;
+	if (hit_down.hit)  next_y += 10-hit_down.distance;
 	
 	player.x = next_x;
 	player.y = next_y;
@@ -223,7 +522,7 @@ function cam_update() {
 	var pPlane_center_y = pPlane_height/2;
 	
 	// angle between subsequent rays
-	var ray_angle_dif = camera.fov/pPlane_width;
+	var ray_angle_dif = (camera.fov/pPlane_width);
 	
 	// distance between the player and the projection plane
 	camera.pPlane_dis = pPlane_width / tan(camera.fov/2);
@@ -241,9 +540,9 @@ function cam_update() {
 		
 		// updates the ray array with the distance and what side
 		if (hitpoint.hit) {
-			camera.rays[column] = {distance: hitpoint.distance, side:hitpoint.side, angle:(camera.direction + ray_angle)};
+			camera.rays[column] = {distance: hitpoint.distance, side:hitpoint.side, offset:hitpoint.offset, angle:(camera.direction + ray_angle)};
 		} else {
-			camera.rays[column] = {distance: 1000, side:hitpoint.side};
+			camera.rays[column] = {distance: 1000, side:hitpoint.side, offset:hitpoint.offset};
 		}
 		
 		// only need to do the fix math once
@@ -255,11 +554,14 @@ function cam_update() {
 function cam_draw_debug() {
 	draw_set_color("#000000");
 	
+	var x = rayCanvas.width/2;
+	var y = rayCanvas.height/2;
+	
 	var column;
 	for (column = 0; column<camera.rays.length; column+=1){
-		draw_line(camera.x, camera.y, 
-				camera.x+lengthdir_x(camera.rays[column].distance, camera.rays[column].angle),
-				camera.y+lengthdir_y(camera.rays[column].distance, camera.rays[column].angle));
+		draw_line(x, y, 
+				x+lengthdir_x(camera.rays[column].distance, camera.rays[column].angle),
+				y+lengthdir_y(camera.rays[column].distance, camera.rays[column].angle));
 	}
 }
 
@@ -280,24 +582,44 @@ function screen_render() {
 		//
 		var ray_distance = camera.rays[column].distance;
 		var ray_side = camera.rays[column].side;
-		
-		//
-		var color = color_new(0,0,0,1);;
-		if (ray_side == 0) color = color_new(255,0,0,1);
-		if (ray_side == 1) color = color_new(0,255,0,1);
-		if (ray_side == 2) color = color_new(0,0,255,1);
-		if (ray_side == 3) color = color_new(255,255,0,1);
-		
-		var color_fad = clamp(ray_distance/(500),0,1);
-		var new_color = merge_color(color_new(0,0,0,1), color, 1-color_fad);
-		draw_set_color(color_getJScolor(new_color));
-		
-		var height = (32 / (ray_distance * camera.distortion_fix[column])) * camera.pPlane_dis;
+
+		var height = (16 / (ray_distance * camera.distortion_fix[column])) * camera.pPlane_dis;
 
 		//
 		var column_x = pPlane_width-column;
 		var column_y = pPlane_center_y + camera.z/ray_distance*10;
+
+		//
+		//
+		var cur_image = wall_sprite[5];
+		var cur_image_size = 32;
+		
+		if (ray_distance < 500) {
+			cur_image = wall_sprite[4]; cur_image_size = 64; }
+		if (ray_distance < 400) {
+			cur_image = wall_sprite[3]; cur_image_size = 128; }
+		if (ray_distance < 300) {
+			cur_image = wall_sprite[2]; cur_image_size = 256; }
+		if (ray_distance < 200) {
+			cur_image = wall_sprite[1]; cur_image_size = 512; }
+		if (ray_distance < 100) {
+			cur_image = wall_sprite[0]; cur_image_size = 1024; }
+		
+		//
+		draw_image(cur_image, 
+				(camera.rays[column].offset/33)*cur_image_size, 0, 1, cur_image_size,
+				column_x, column_y-height/2 , 1, height);
+				
+		
+		
+		// overlay
+		current_context.globalAlpha = ray_distance/500; 
 		draw_line(column_x, column_y-height/2 ,column_x, column_y+height/2);
+		draw_line(column_x, column_y-height/2 ,column_x, column_y+height/2);
+		draw_line(column_x, column_y-height/2 ,column_x, column_y+height/2);
+		draw_line(column_x, column_y-height/2 ,column_x, column_y+height/2);
+		draw_line(column_x, column_y-height/2 ,column_x, column_y+height/2);
+		current_context.globalAlpha = 1; 
 	}
 }
 
@@ -326,7 +648,9 @@ function collision_line_point(x1, y1, x2, y2){
 		y: 0,
 		hit: false,
 		side: 0,
-		distance: 10000000
+		offset: 0,
+		distance: 10000000,
+		wallIndex: 0
 	};
 	
 	var i;
@@ -339,6 +663,12 @@ function collision_line_point(x1, y1, x2, y2){
 		if (hitpoint.hit) {
 			if (bestPoint.distance > hitpoint.distance){
 				bestPoint = hitpoint;
+				bestPoint.wallIndex = i;
+				if (bestPoint.side == 0 || bestPoint.side == 2) {
+					bestPoint.offset = bestPoint.x - walls[i].x;
+				} else {
+					bestPoint.offset = bestPoint.y - walls[i].y;
+				}
 			}
 		}
 	}
@@ -447,84 +777,13 @@ function line_getIntersection_line(line1, line2) {
 		result.y = Py;
 	}
 	return result;
-	///////////////////////////////////////////////////////
-	/*
-	var Adx = line1.x2-line1.x1;
-	var Ady = line1.y2-line1.y1;
-
-	var Bdx = line2.x2-line2.x1;
-	var Bdy = line2.y2-line2.y1;
-	
-	var determinator=Bdy*Adx-Bdx*Ady;
-	
-	if (determinator == 0) {
-		return result;
-		
-	} else {
-		var dx = line1.x1-line2.x1;
-		var dy = line1.y1-line2.y1;
-		
-		var Aposition = (Bdx*dy-Bdy*dx)/determinator;	 
-		var Bposition = (Adx*dy-Ady*dx)/determinator;
-		
-		Aposition = clamp(Aposition, 0, 1);
-		Bposition = clamp(Bposition, 0, 1);
-		
-		//point on line A
-		//var Apx = line1.x1+Aposition*Adx;
-		//var Apy = line1.y1+Aposition*Ady;
-		
-		//point on line B
-		var Bpx = line2.x1+Bposition*Bdx;
-		var Bpy = line2.y1+Bposition*Bdy;
-		
-		result.hit = true;
-		result.x = Bpx;
-		result.y = Bpy;
-	}
-	
-	return result;
-	
-	*/
-	////////////////////////////////////////////////////////
-	/*
-	var a1,a2,b1,b2,c1,c2,o1,o2,o3,o4,t;
-
-	a1 = line1.y2 - line1.y1;
-	b1 = -(line1.x2 - line1.x1);
-	c1 = -a1*line1.x1 - b1*line1.y1;
-
-	a2 = line2.y2 - line2.y1;
-	b2 = -(line2.x2 - line2.x1);
-	c2 = -a2*line2.x1 - b2*line2.y1;
-
-	//Testing
-	o1 = a1*line2.x1 + b1*line2.y1 + c1;
-	o2 = a1*line2.x2 + b1*line2.y2 + c1;
-	o3 = a2*line1.x1 + b2*line1.y1 + c2;
-	o4 = a2*line1.x2 + b2*line1.y2 + c2;
-
-	if (((o3 < 0 && o4 < 0) || (o3 > 0 && o4 > 0)) || ((o1 < 0 && o2 < 0) || (o1 > 0 && o2 > 0)))
-		return result;
-
-	t = a1*b2 - a2*b1;
-	if (t == 0)
-		return result;
-
-	result.hit = true;
-	result.x = (b1*c2 - b2*c1)/t;
-	result.y = (b1*c2 - b2*c1)/t;
-
-	draw_set_color("#FF0000");
-	draw_circle(result.x, result.y, 5);
-	
-	return result;*/
 }
 
 // circle 
 function collision_circle_point(x, y, r){
-	var bestPoint = {hit:false, x:0, y:0, distance: r, dir:0}
 	
+	var bestPoint = {hit:false, x:0, y:0, distance: r, dir:0}
+	/*
 	var circle = {x:x, y:y, r:r};
 	var circle_bb = AABB_from_circle(circle);
 	
@@ -553,7 +812,7 @@ function collision_circle_point(x, y, r){
 			}
 		}
 		
-	}
+	}*/
 	
 	return bestPoint;
 }
@@ -817,6 +1076,13 @@ function draw_rect(x,y,width,height) {
 }
 function draw_point(x,y) {
 	current_context.fillRect(x,y,1,1);
+}
+function draw_image(image, sx,sy,sw,sh, dx,dy,dw,dh) {
+	current_context.drawImage( 
+		image,        // the image of the sprite sheet 
+		sx,sy,sw,sh, // source coordinates      (x,y,w,h) 
+		dx,dy,dw,dh  // destination coordinates (x,y,w,h) 
+		); 
 }
 
 

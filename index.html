@@ -7,14 +7,45 @@
 <script type="text/javascript" src="simple3d.js"></script>
 </head>
 
-<body>
-<p>
-<canvas id="3dCanvas" width="640" height="480" style="border:1px solid #000000;">
-No canvas for you.
-</canvas>
-<canvas id="rayCanvas" width="400" height="400" style="border:1px solid #000000;">
-No canvas for you.
-</canvas>
-</p>
+<body style="margin:0;width:100%;height:100%;background-color:black;" 
+	onresize="resize_canvas()"; onload="resize_canvas()">
+    <script type="text/javascript">
+        function resize_canvas(){
+            canvas = document.getElementById("3dCanvas");
+			
+			var widthToHeight = canvas.width/canvas.height;
+			
+			var newWidth = window.innerWidth;
+			var newHeight = window.innerHeight;
+			
+			var newWidthToHeight = newWidth / newHeight;
+			
+			if (newWidthToHeight > widthToHeight) {
+				newWidth = newHeight * widthToHeight;
+				canvas.style.height = newHeight + 'px';
+				canvas.style.width = newWidth + 'px';
+			} else {
+				newHeight = newWidth / widthToHeight;
+				canvas.style.width = newWidth + 'px';
+				canvas.style.height = newHeight + 'px';
+			}
+        }
+    </script>
+	<p style="margin:0; width: 100%; height: 100%;">
+	
+		<canvas id="3dCanvas" 
+				width="640" 
+				height="640" 
+				style="padding: 0; margin: auto; display: block; position: absolute;
+						top: 0; bottom: 0; left: 0; right: 0;">
+		No canvas for you.
+		</canvas>
+		
+	</p>
+		
+	<canvas id="rayCanvas" width="200" height="200" style="border:1px solid #000000;">
+	No canvas for you.
+	</canvas>
+	
 </body>
 </html>
